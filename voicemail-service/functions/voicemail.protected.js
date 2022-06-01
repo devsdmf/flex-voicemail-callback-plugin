@@ -1,31 +1,27 @@
-exports.handler = function (context, event, callback) {
-  let domainName = `${context.DOMAIN_NAME}`;
+const helpersPath = Runtime.getFunctions().helpers.path;
+const { getDomain } = require(helpersPath);
 
-  if (context.DOMAIN_NAME.includes("localhost")) {
-    domainName = context.NGROK_URL;
-  }
+exports.handler = async (context, event, callback) => {
+  console.log('[voicemail] Event => ', event);
+  const domain = getDomain(context);
+  const twiml = new Twilio.twiml.VoiceResponse();
+  const { taskSid } = event;
 
-  let taskSid = event.taskSid;
-  let transcriptionCallBack = `/transcriptionComplete`;
-  let twiml = new Twilio.twiml.VoiceResponse();
+  const buildCallbackUrl = (func) => `${domain}/${func}?taskSid=${taskSid}` + 
+    `&callerId=${encodeURIComponent(event.Caller)}` +
+    `&voicemailBox=${event.voicemailBox}`;
 
-  twiml.say(
-    "Sorry, no one is available to take your call. Please leave a message at the beep. When you're done, press pound or just hang-up."
-  );
+  twiml.say('Please, leave a message at the tone. Press star key when finished.');
 
   twiml.record({
-    action: encodeURI(`/voicemailResponse`),
-    recordingStatusCallback: encodeURI(
-      `voicemailComplete?taskSid=${taskSid}&workerExtension=${
-        event.workerExtension
-      }&callerId=${encodeURIComponent(event.Caller)}`
-    ),
-    finishOnKey: "#",
+    action: `${domain}/voicemail-response`,
+    recordingStatusCallback: buildCallbackUrl('voicemail-complete'),
+    finishOnKey: '*',
+    method: 'POST',
     playBeep: true,
     transcribe: true,
-    transcribeCallback: encodeURI(
-      `/transcriptionComplete?taskSid=${taskSid}&workerExtension=${event.workerExtension}`
-    ),
+    transcribeCallback: buildCallbackUrl('transcription-complete')
   });
+
   callback(null, twiml);
 };
