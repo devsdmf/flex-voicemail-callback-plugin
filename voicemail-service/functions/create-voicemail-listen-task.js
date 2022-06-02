@@ -4,14 +4,16 @@ exports.handler = TokenValidator(function (context, event, callback) {
   console.log("Event data:", event);
   const client = context.getTwilioClient();
   const response = new Twilio.Response();
+
   response.setStatusCode(200);
   response.appendHeader("Access-Control-Allow-Origin", "*");
   response.appendHeader("Access-Control-Allow-Methods", "OPTIONS POST GET");
   response.appendHeader("Access-Control-Allow-Headers", "Content-Type");
+
   try {
     client.sync
       .services(context.SYNC_SERVICE_SID)
-      .syncLists(`voicemail-${event.workerExtension}`)
+      .syncLists(`voicemail-${event.voicemailBox}`)
       .syncListItems(event.id)
       .fetch()
       .then((voicemail) => {
@@ -36,12 +38,12 @@ exports.handler = TokenValidator(function (context, event, callback) {
             })
             .then((task) => {
               console.log("Task created", task);
-              console.log(`Updating Sync list for workerExtension: ${event.workerExtension} for voicemail index: ${event.id}`)
+              console.log(`Updating Sync list for VoicemailBox: ${event.voicemailBox} for voicemail index: ${event.id}`)
               voicemail.data.listenedTo = true;
               console.log("Voicemail sync list item", voicemail);
               client.sync
                 .services(context.SYNC_SERVICE_SID)
-                .syncLists(`voicemail-${event.workerExtension}`)
+                .syncLists(`voicemail-${event.voicemailBox}`)
                 .syncListItems(event.id)
                 .update(voicemail)
                 .then(() => {
