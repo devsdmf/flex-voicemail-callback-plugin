@@ -41,14 +41,17 @@ const getTask = (context, sid) => {
     });
 };
 
-const sendCallToVoicemail = async (context, taskSid, callSid, voicemailBox) => {
+const sendCallToVoicemail = async (context, taskSid, callSid, voicemailBox, unavailable) => {
   const client = context.getTwilioClient();
   const domain = getDomain(context);
 
   await cancelTask(client, context.TWILIO_WORKSPACE_SID, taskSid);
 
   const method = 'POST';
-  const url = `${domain}/voicemail?taskSid=${taskSid}&voicemailBox=${encodeURIComponent(voicemailBox)}`;
+  const url = `${domain}/voicemail` +
+    `?taskSid=${taskSid}` + 
+    `&voicemailBox=${encodeURIComponent(voicemailBox)}` + 
+    `${unavailable === true ? '&unavailable=1' : ''}`;
 
   try {
     await client.calls(callSid).update({ method, url });

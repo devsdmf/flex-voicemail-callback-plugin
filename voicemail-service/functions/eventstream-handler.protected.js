@@ -2,9 +2,9 @@ const configPath = Runtime.getFunctions().config.path;
 const config = require(configPath);
 
 const helpersPath = Runtime.getFunctions().helpers.path;
-const { getDomain } = require(helpersPath);
+const { getDomain, sendCallToVoicemail } = require(helpersPath);
 
-exports.handler = function(context, event, callback) {
+exports.handler = async (context, event, callback) => {
   // get configured twilio client
   const client = context.getTwilioClient();
   const domain = getDomain(context);
@@ -21,24 +21,15 @@ exports.handler = function(context, event, callback) {
     if (!config.voicemailQueues.includes(event.TaskQueueName)) {
       return callback(null, response);
     }
-    
-    
-    let taskSid = event.TaskSid;
-    let taskAttributes = JSON.parse(event.TaskAttributes);
-    let callSid = taskAttributes.call_sid;
-    let url = `${domain}/voicemail?taskSid=${taskSid}}`;
 
-    // redirect call to voicemail
-    client.calls(callSid).update({
-      method: 'POST',
-      url: encodeURI(url)
-    }).then(() => {
-      return callback(null, response);
-    }).catch(err => {
-      console.log("Redirect error",err)
-      response.setStatusCode(500);
-      return callback(err, response);
-    });
+    
+    const taskSid = event.TaskSid;
+    const taskAttributes = JSON.parse(event.TaskAttributes);
+    const callSid = taskAttributes.call_sid;
+    const voicemailBox = taskAttributes.voicemailBox;
+    const unavailable = true;
+
+    await sendCallToVoicemail(context, taskSid, callSid, voicemailBox, unavailable);
   } else {
     callback(null,response);
   }

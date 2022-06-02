@@ -16,7 +16,10 @@ exports.handler = (context, event, callback) => {
           url: event.RecordingUrl,
           timestamp: Math.floor(Date.now() / 1000),
           listenedTo: false,
-          callerId: decodeURIComponent(event.callerId)
+          handled: false,
+          archived: false,
+          callerId: decodeURIComponent(event.callerId),
+          transcription: null
         },
       })
       .then((item) => {

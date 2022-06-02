@@ -7,6 +7,10 @@ exports.handler = async (context, event, callback) => {
   const twiml = new Twilio.twiml.VoiceResponse();
   const { taskSid } = event;
 
+  if (event.unavailable) {
+    twiml.say('Sorry, our agents are not available at this moment...');
+  }
+
   const buildCallbackUrl = (func) => `${domain}/${func}?taskSid=${taskSid}` + 
     `&callerId=${encodeURIComponent(event.Caller)}` +
     `&voicemailBox=${event.voicemailBox}`;

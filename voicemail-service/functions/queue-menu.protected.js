@@ -102,7 +102,10 @@ exports.handler = async (context, event, callback) => {
       return callback(null, handleStayInQueue(domain, taskSid));
     } else if (option === '2') {
       // request a callback
+      const twiml = new Twilio.twiml.VoiceResponse();
       twiml.say('Callback requested');
+
+      return callback(null, twiml);
     } else if (option === '3') {
       // leave voicemail
       await sendCallToVoicemail(context, taskSid, CallSid, taskAttributes.voicemailBox);
