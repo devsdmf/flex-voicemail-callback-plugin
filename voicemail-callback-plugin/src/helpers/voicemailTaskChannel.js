@@ -3,6 +3,7 @@ import { VOICEMAIL_TASK_CHANNEL_NAME } from "./voicemailHelper";
 import { Tab } from "@twilio/flex-ui";
 import VoicemailTaskCanvasContainer from "../components/VoicemailTaskCanvas/VoicemailTaskCanvas.Container";
 import VoicemailDeleteButton from "../components/VoicemailTaskCanvas/VoicemailDeleteButton";
+import VoicemailHandledButton from "../components/VoicemailTaskCanvas/VoicemailHandledButton";
 
 export function autoAcceptVoicemailTask(flex, manager) {
   manager.workerClient.on("reservationCreated", (reservation) => {
@@ -53,7 +54,7 @@ export default function registerVoicemailTaskChannel(flex) {
     },
     {
       target: "TaskCanvasHeader",
-      component: <VoicemailDeleteButton key="voicemail-delete" />,
+      component: <VoicemailHandledButton key="voicemail-handled" />,
       options: {
         if: (props) => props.task.status === "accepted",
       },

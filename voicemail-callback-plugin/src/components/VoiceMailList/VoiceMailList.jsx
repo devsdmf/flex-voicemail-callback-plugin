@@ -16,6 +16,7 @@ import Paper from "@material-ui/core/Paper";
 import { withStyles } from "@material-ui/core/styles";
 
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
+import ArchiveIcon from "@material-ui/icons/Archive";
 import VoicemailIcon from "@material-ui/icons/Voicemail";
 import PlayCircleOutlineIcon from "@material-ui/icons/PlayCircleOutline";
 
@@ -29,9 +30,13 @@ import {
 function Header(props) {
   const {
     updateNewOnlyFilter,
+    updateArchivedFilter,
+    updateUnhandledOnlyFilter,
     updateDateTimeSort,
     updateCallerFilter,
     newOnlyFilterValue,
+    archivedFilterValue,
+    unhandledOnlyFilterValue,
     callerFilerValue,
     dateTimeSortValue,
   } = props;
@@ -45,6 +50,26 @@ function Header(props) {
               color="secondary"
               onChange={updateNewOnlyFilter}
               checked={newOnlyFilterValue}
+            />
+          </FlexBox>
+        </StyledHeaderTableCell>
+        <StyledHeaderTableCell>
+          <FlexBox>Unhandled only</FlexBox>
+          <FlexBox>
+            <Switch
+              color="secondary"
+              onChange={updateUnhandledOnlyFilter}
+              checked={unhandledOnlyFilterValue}
+            />
+          </FlexBox>
+        </StyledHeaderTableCell>
+        <StyledHeaderTableCell>
+          <FlexBox>Archived</FlexBox>
+          <FlexBox>
+            <Switch
+              color="secondary"
+              onChange={updateArchivedFilter}
+              checked={archivedFilterValue}
             />
           </FlexBox>
         </StyledHeaderTableCell>
@@ -68,7 +93,7 @@ function Header(props) {
             />
           </FlexBox>
         </StyledHeaderTableCell>
-        <StyledHeaderTableCell>Open | Delete</StyledHeaderTableCell>
+        <StyledHeaderTableCell>Open | Archive</StyledHeaderTableCell>
       </TableRow>
     </TableHead>
   );
@@ -79,7 +104,7 @@ function Body(props) {
     filteredAndSortedVoicemails,
     openAllowed,
     openHandler,
-    deleteHandler,
+    archiveHandler,
   } = props;
   return (
     <TableBody>
@@ -99,6 +124,8 @@ function Body(props) {
               />
             </HtmlTooltip>
           </TableCell>
+          <TableCell align="left">{voicemail.handled ? 'Yes' : 'No'}</TableCell>
+          <TableCell align="left">{voicemail.archived ? 'Yes': 'No'}</TableCell>
           <TableCell align="left">{voicemail.createdDateTime}</TableCell>
           <TableCell align="left">{voicemail.callerNumber}</TableCell>
           <TableCell align="left">
@@ -117,14 +144,15 @@ function Body(props) {
                 </div>
               </Tooltip>
 
-              <Tooltip title="Delete">
+              <Tooltip title="Archive">
                 <Button
                   color="primary"
+                  disabled={voicemail.archived || false}
                   onClick={() => {
-                    deleteHandler(voicemail.id);
+                    archiveHandler(voicemail.id);
                   }}
                 >
-                  <HighlightOffIcon />
+                  <ArchiveIcon />
                 </Button>
               </Tooltip>
             </StyledButtonContainer>
@@ -140,7 +168,12 @@ class VoicemailList extends Component {
     super(props);
 
     this.state = {
-      filters: { caller: "", newOnly: false },
+      filters: { 
+        caller: "", 
+        newOnly: false, 
+        unhandledOnly: false,
+        archived: false 
+      },
       sort: { dateTime: "asc" },
     };
   }
@@ -155,6 +188,16 @@ class VoicemailList extends Component {
     this.setState({ filters: { ...this.state.filters, newOnly: checked } });
   };
 
+  updateArchivedFilter = (e) => {
+    const checked = e.target.checked;
+    this.setState({ filters: { ...this.state.filters, archived: checked } });
+  };
+
+  updateUnhandledOnlyFilter = (e) => {
+    const checked = e.target.checked;
+    this.setState({ filters: { ...this.state.filters, unhandledOnly: checked } });
+  };
+
   updateDateTimeSort = (e) => {
     const newSortOrder = this.state.sort.dateTime === "asc" ? "desc" : "asc";
     this.setState({
@@ -165,6 +208,13 @@ class VoicemailList extends Component {
   filterNewOnly = (voicemail) =>
     !this.state.filters.newOnly ||
     (this.state.filters.newOnly && !voicemail.listenedToFlag);
+
+  filterArchived = (voicemail) => 
+    voicemail.archived === this.state.filters.archived;
+
+  filterUnhandledOnly = (voicemail) => 
+    !this.state.filters.unhandledOnly ||
+    (this.state.filters.unhandledOnly && !voicemail.handled);
 
   filterCaller = (voicemail) =>
     !this.state.filters.caller ||
@@ -183,32 +233,40 @@ class VoicemailList extends Component {
   };
 
   render() {
-    const { classes, deleteHandler, openHandler, allowCreateVoicemailTasks } =
+    const { classes, archiveHandler, openHandler, allowCreateVoicemailTasks } =
       this.props;
 
     const openAllowed = allowCreateVoicemailTasks;
 
     const callerFilerValue = this.state.filters.caller;
     const newOnlyFilterValue = this.state.filters.newOnly;
+    const archivedFilterValue = this.state.filters.archived;
+    const unhandledOnlyFilterValue = this.state.filters.unhandledOnly;
     const dateTimeSortValue = this.state.sort.dateTime;
 
     const filteredAndSortedVoicemails = this.props.voicemails
       .filter(this.filterNewOnly)
+      .filter(this.filterArchived)
+      .filter(this.filterUnhandledOnly)
       .filter(this.filterCaller)
       .sort(this.sortDateTime);
 
     const headerProps = {
       updateDateTimeSort: this.updateDateTimeSort,
       updateNewOnlyFilter: this.updateNewOnlyFilter,
+      updateArchivedFilter: this.updateArchivedFilter,
+      updateUnhandledOnlyFilter: this.updateUnhandledOnlyFilter,
       updateCallerFilter: this.updateCallerFilter,
 
       callerFilerValue,
+      archivedFilterValue,
+      unhandledOnlyFilterValue,
       newOnlyFilterValue,
       dateTimeSortValue,
     };
 
     const bodyProps = {
-      deleteHandler,
+      archiveHandler,
       openHandler,
       filteredAndSortedVoicemails,
       openAllowed,

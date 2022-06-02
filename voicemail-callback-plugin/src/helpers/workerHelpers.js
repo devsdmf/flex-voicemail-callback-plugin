@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Manager } from "@twilio/flex-ui";
 import { stringify } from "query-string";
-import { PLUGIN_NAME } from "../PerAgentVoicemailPlugin";
+import { PLUGIN_NAME } from "../VoicemailCallbackPlugin";
 
 export async function updateWorkerAttributes(worker, attributesToMergeIn) {
   const manager = Manager.getInstance();

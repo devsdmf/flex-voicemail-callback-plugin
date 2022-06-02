@@ -73,6 +73,9 @@ class VoicemailTaskCanvas extends Component {
 
           <h2>Caller</h2>
           <p>{voicemail.callerNumber} </p>
+
+          <h2>Handled</h2>
+          <p>{voicemail.handled ? 'Yes' : 'No'}</p>
           <hr />
 
           <audio ref="audio_tag" src={voicemail.url} controls />

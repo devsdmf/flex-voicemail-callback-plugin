@@ -9,7 +9,7 @@ const initialState = {
 };
 
 const extension =
-  Manager.getInstance().store.getState().flex.worker.attributes.workerExtension;
+  Manager.getInstance().store.getState().flex.worker.attributes.voicemailBox;
 
 
 export const Actions = {

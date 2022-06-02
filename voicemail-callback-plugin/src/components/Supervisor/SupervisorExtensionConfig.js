@@ -1,5 +1,5 @@
 import React from "react";
-import { PLUGIN_NAME } from "../../PerAgentVoicemailPlugin";
+import { PLUGIN_NAME } from "../../VoicemailCallbackPlugin";
 import VoicemailHelper from "../../helpers/voicemailHelper";
 import { Button } from "@twilio/flex-ui-core";
 import {

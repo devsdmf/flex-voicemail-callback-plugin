@@ -1,6 +1,6 @@
 import { Manager } from "@twilio/flex-ui";
 import { SyncClient } from "twilio-sync";
-import { PLUGIN_NAME } from "../PerAgentVoicemailPlugin";
+import { PLUGIN_NAME } from "../VoicemailCallbackPlugin";
 
 const SYNC_CLIENT = new SyncClient(Manager.getInstance().user.token);
 
@@ -72,6 +72,27 @@ export default class SyncHelper {
     } catch (err) {
       console.error("list getItems() failed", err);
     }
+  }
+
+  static async updateListItem(listName, itemId, updatedData) {
+    return new Promise((resolve, reject) => {
+      const listOpenOptions = { id: listName, mode: "open_existing" };
+      SYNC_CLIENT.list(listOpenOptions).then((listObj) => {
+        listObj.get(itemId)
+          .then(item => {
+            const data = { ...item.data.value, ...updatedData };
+            listObj.set(itemId, data).then(() => true)
+              .catch(err => {
+                console.error('updateListItem() failed', err);
+                return false;
+              });
+          })
+          .catch(err => {
+            console.error('updateListItem() failed', err);
+            return false;
+          });
+      });
+    });
   }
 
   static async deleteListItem(listName, itemId) {

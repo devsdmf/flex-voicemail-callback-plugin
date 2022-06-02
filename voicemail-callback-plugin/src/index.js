@@ -1,4 +1,4 @@
-import * as FlexPlugin from "flex-plugin";
-import PerAgentVoicemailPlugin from "./PerAgentVoicemailPlugin";
+import * as FlexPlugin from "@twilio/flex-plugin";
+import VoicemailCallbackPlugin from "./VoicemailCallbackPlugin";
 
-FlexPlugin.loadPlugin(PerAgentVoicemailPlugin);
+FlexPlugin.loadPlugin(VoicemailCallbackPlugin);

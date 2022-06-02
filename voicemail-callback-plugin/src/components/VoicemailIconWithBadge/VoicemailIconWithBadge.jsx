@@ -13,7 +13,7 @@ export default class VoicemailIconWithBadge extends React.Component {
     const newVoicemails = voicemails.filter(voicemail => voicemail.listenedToFlag === false);
     const length = newVoicemails.length;
     if (!Manager.getInstance().store.getState().flex.worker.attributes
-    .workerExtension)
+    .voicemailBox)
     {
       return null;
     }

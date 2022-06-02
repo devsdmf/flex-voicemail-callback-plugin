@@ -4,7 +4,7 @@ import { SyncClient } from "twilio-sync";
 import { updateWorkerAttributes } from "./workerHelpers";
 import Voicemail from "./Voicemail";
 import { Actions } from "../states/VoiceMailListState";
-import { PLUGIN_NAME } from "../PerAgentVoicemailPlugin";
+import { PLUGIN_NAME } from "../VoicemailCallbackPlugin";
 
 const LIST_NAME_PREFIX = "voicemail-";
 const ATTRIBUTE_NAME = "workerExtension";
@@ -61,7 +61,7 @@ export default class VoicemailHelper {
 
   static fetchExtension() {
     return Manager.getInstance().store.getState().flex.worker.attributes
-      .workerExtension;
+      .voicemailBox;
   }
 
   static async addExtension(worker, extension) {
@@ -83,6 +83,20 @@ export default class VoicemailHelper {
     });
   }
 
+  static async archiveVoicemail(id) {
+    return new Promise((resolve, reject) => {
+      const listName = extensionToListName(VoicemailHelper.fetchExtension());
+      SyncHelper.updateListItem(listName, id, { archived: true });
+    });
+  }
+
+  static async handleVoicemail(id) {
+    return new Promise((resolve, reject) => {
+      const listName = extensionToListName(VoicemailHelper.fetchExtension());
+      SyncHelper.updateListItem(listName, id, { handled: true });
+    });
+  }
+
   static async openVoicemail(id) {
     console.log(PLUGIN_NAME, " openVoicemail id=", id);
 
@@ -90,9 +104,9 @@ export default class VoicemailHelper {
       method: "POST",
       body: new URLSearchParams({
         id: id,
-        workerExtension:
+        voicemailBox:
           Manager.getInstance().store.getState().flex.worker.attributes
-            .workerExtension,
+            .voicemailBox,
         Token:
           Manager.getInstance().store.getState().flex.session.ssoTokenPayload
             .token,
@@ -104,7 +118,7 @@ export default class VoicemailHelper {
 
     try {
       const fetchResponse = await fetch(
-        `${process.env.FLEX_APP_TWILIO_SERVERLESS_DOMAIN}/createVoicemailListenTask`,
+        `${process.env.FLEX_APP_TWILIO_SERVERLESS_DOMAIN}/create-voicemail-listen-task`,
         options
       );
 
@@ -152,7 +166,9 @@ export default class VoicemailHelper {
       listItem.item.data.value.listenedTo ?? false,
       listItem.item.data.value.callerId ?? "unknown",
       listItem.item.data.value.transcription ?? null,
-      listItem.item.data.value.url ?? null
+      listItem.item.data.value.url ?? null,
+      listItem.item.data.value.archived ?? false,
+      listItem.item.data.value.handled ?? false
     );
   }
 

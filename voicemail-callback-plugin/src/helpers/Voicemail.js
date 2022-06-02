@@ -14,13 +14,15 @@ function truncate(str, n, useWordBoundary) {
 }
 
 class Voicemail {
-  constructor(id, timestamp, listenedTo, callerId, transcription, url) {
+  constructor(id, timestamp, listenedTo, callerId, transcription, url, archived, handled) {
     this.id = id;
     this.dateCreated = new Date(timestamp);
     this.listenedToFlag = listenedTo;
     this.callerId = callerId;
     this.transcription = transcription;
     this.url = url;
+    this.archived = archived;
+    this.handled = handled;
   }
 
   get createdDateTime() {
