@@ -1,15 +1,12 @@
 import { Manager } from "@twilio/flex-ui";
 import SyncHelper from "./syncHelper";
-import { SyncClient } from "twilio-sync";
-import { updateWorkerAttributes } from "./workerHelpers";
+
 import Voicemail from "./Voicemail";
+
 import { Actions } from "../states/VoiceMailListState";
-import { PLUGIN_NAME } from "../VoicemailCallbackPlugin";
 
 const LIST_NAME_PREFIX = "voicemail-";
-const ATTRIBUTE_NAME = "workerExtension";
 const VOICEMAIL_TASK_CHANNEL_NAME = "voicemail";
-const SYNC_CLIENT = new SyncClient(Manager.getInstance().user.token);
 
 function extensionToListName(extension) {
   return LIST_NAME_PREFIX + extension;
@@ -32,29 +29,7 @@ export default class VoicemailHelper {
     }
     return true;
   }
-  static workerNameFromExtenstion(extension) {
-    return new Promise((resolve, reject) => {
-      const insightsClient = Manager.getInstance().insightsClient;
 
-      insightsClient.instantQuery("tr-worker").then((q) => {
-        // handle the search result event and resolve the promise
-        q.on("searchResult", (items) => {
-          // items is key, value pairs of worker sid key -> worker value (should just be one or zero values)
-          const matchingWorker = Object.values(items)[0];
-
-          if (matchingWorker) {
-            resolve(matchingWorker.attributes.full_name);
-            console.log("Test:",matchingWorker.attributes.full_name);
-          } else {
-            resolve(null);
-          }
-        });
-
-        // initiate the search
-        q.search(`data.attributes.${ATTRIBUTE_NAME} eq '${extension}' `);
-      });
-    });
-  }
   static async extensionExists(extension) {
     return SyncHelper.listExists(extensionToListName(extension));
   }
@@ -62,18 +37,6 @@ export default class VoicemailHelper {
   static fetchExtension() {
     return Manager.getInstance().store.getState().flex.worker.attributes
       .voicemailBox;
-  }
-
-  static async addExtension(worker, extension) {
-    const workerAttribute = `{"${ATTRIBUTE_NAME}":"${extension}"}`;
-    await updateWorkerAttributes(worker, JSON.parse(workerAttribute));
-    await SyncHelper.addList(extensionToListName(extension));
-  }
-
-  static async deleteExtension(worker, extension) {
-    const workerAttribute = `{"${ATTRIBUTE_NAME}":""}`;
-    await updateWorkerAttributes(worker, JSON.parse(workerAttribute));
-    await SyncHelper.removeList(extensionToListName(extension));
   }
 
   static async deleteVoicemail(id) {
@@ -98,7 +61,7 @@ export default class VoicemailHelper {
   }
 
   static async openVoicemail(id) {
-    console.log(PLUGIN_NAME, " openVoicemail id=", id);
+    console.log("[VoicemailHelper] openVoicemail id=", id);
 
     const options = {
       method: "POST",
@@ -124,9 +87,9 @@ export default class VoicemailHelper {
 
       const responseData = await fetchResponse.json();
 
-      console.log(PLUGIN_NAME, " Task Created Sid=", responseData.taskSid);
+      console.log("[VoicemailHelper] Task Created Sid=", responseData.taskSid);
     } catch (e) {
-      console.log(PLUGIN_NAME, " Unable to create voicemail task:", e);
+      console.log("[VoicemailHelper] Unable to create voicemail task:", e);
     }
   }
   static voicemailFromTaskAttributes(task) {
@@ -184,20 +147,20 @@ export default class VoicemailHelper {
   }
 
   static onSyncItemAdded(listItem) {
-    console.log(PLUGIN_NAME, ` List item: ${listItem.item.index} was added`);
+    console.log(`[VoicemailHelper] List item: ${listItem.item.index} was added`);
     const newVoicemail = VoicemailHelper.voicemailFromSyncListItem(listItem);
     Manager.getInstance().store.dispatch(Actions.addVoicemail(newVoicemail));
   }
 
   static onSyncItemRemoved(listItem) {
-    console.log(PLUGIN_NAME, ` List item ${listItem.index} was removed`);
+    console.log(`[VoicemailHelper] List item ${listItem.index} was removed`);
     Manager.getInstance().store.dispatch(
       Actions.removeVoicemail(listItem.index)
     );
   }
 
   static onSyncItemUpdated(listItem) {
-    console.log(PLUGIN_NAME, ` List item ${listItem.item.index} was updated`);
+    console.log(`[VoicemailHelper] List item ${listItem.item.index} was updated`);
     const updatedVoicemail =
       VoicemailHelper.voicemailFromSyncListItem(listItem);
     Manager.getInstance().store.dispatch(

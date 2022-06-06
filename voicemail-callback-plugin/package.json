@@ -1,21 +1,21 @@
 {
   "name": "plugin-voicemail-callback",
-  "version": "0.0.3",
+  "version": "0.0.8",
   "private": true,
   "scripts": {
     "postinstall": "flex-plugin pre-script-check"
   },
   "dependencies": {
+    "@twilio/flex-plugin-scripts": "5.1.0",
     "dotenv-webpack": "^4.0.0",
     "libphonenumber-js": "^1.9.44",
     "moment": "^2.29.1",
     "react": "16.5.2",
     "react-dom": "16.5.2",
-    "@twilio/flex-plugin-scripts": "5.1.0",
     "react-emotion": "9.2.12"
   },
   "devDependencies": {
-    "@twilio/flex-ui": "^1",
+    "@twilio/flex-ui": "^1.31",
     "react-test-renderer": "16.5.2"
   }
 }

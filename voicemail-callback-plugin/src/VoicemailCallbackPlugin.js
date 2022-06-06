@@ -1,16 +1,18 @@
 import React from "react";
+
 import { VERSION } from "@twilio/flex-ui";
 import { FlexPlugin } from "@twilio/flex-plugin";
+
 import SyncHelper from "./helpers/syncHelper";
 import VoicemailHelper from "./helpers/voicemailHelper";
-import reducers, { namespace } from "./states";
-import { Actions } from "./states/VoiceMailListState";
-import VoiceMailListContainer from "./components/VoiceMailList/VoiceMailList.Container";
-import SupervisorExtensionConfig from "./components/Supervisor/SupervisorExtensionConfig";
-import { registerDirectCallChannel } from "./helpers/directVoiceTaskChannel";
 import registerVoicemailTaskChannel, {
   autoAcceptVoicemailTask,
 } from "./helpers/voicemailTaskChannel";
+
+import reducers, { namespace } from "./states";
+import { Actions } from "./states/VoiceMailListState";
+
+import VoiceMailListContainer from "./components/VoiceMailList/VoiceMailList.Container";
 import VoicemailIconWithBadgeContainer from "./components/VoicemailIconWithBadge/VoicemailIconWithBadge.Container";
 
 export const PLUGIN_NAME = "VoicemailCallbackPlugin";
@@ -33,12 +35,7 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
 
     SyncHelper.init(manager);
     console.log(PLUGIN_NAME, " running");
-    console.log(
-      PLUGIN_NAME,
-      " FLEX_APP_TWILIO_SERVERLESS_DOMAIN=",
-      process.env.FLEX_APP_TWILIO_SERVERLESS_DOMAIN
-    );
-    //registerDirectCallChannel(flex);
+
     registerVoicemailTaskChannel(flex);
     autoAcceptVoicemailTask(flex, manager);
 
@@ -64,11 +61,6 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
         Voicemail List
       </flex.SideLink>
     );
-
-    /*flex.WorkerSkills.Content.add(
-      <SupervisorExtensionConfig key="voicemail-extension" />,
-      { align: "end" }
-    );*/
 
     // pulls initial voicemail list value from sync
     manager.store.dispatch(Actions.initVoicemail());

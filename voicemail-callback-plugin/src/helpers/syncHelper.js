@@ -1,11 +1,10 @@
 import { Manager } from "@twilio/flex-ui";
 import { SyncClient } from "twilio-sync";
-import { PLUGIN_NAME } from "../VoicemailCallbackPlugin";
 
 const SYNC_CLIENT = new SyncClient(Manager.getInstance().user.token);
 
 function tokenUpdateHandler() {
-  console.log(PLUGIN_NAME, "Refreshing SYNC_CLIENT Token");
+  console.log("[SyncHelper] Refreshing SYNC_CLIENT Token");
 
   const loginHandler =
     Manager.getInstance().store.getState().flex.session.loginHandler;
@@ -18,22 +17,23 @@ function tokenUpdateHandler() {
 
 export default class SyncHelper {
   static init(manager) {
-    console.log(PLUGIN_NAME, " SyncHelper add tokenUpdateHandler for sync");
-    manager.store
-      .getState()
-      .flex.session.loginHandler.on("tokenUpdated", tokenUpdateHandler);
+    console.log("[SyncHelper] add tokenUpdateHandler for sync");
+
+    manager.events.addListener("tokenUpdated", (tokenPayload) => {
+      tokenUpdateHandler();
+    });
   }
 
   static async addList(listName) {
     await SYNC_CLIENT.list(listName);
-    console.log(PLUGIN_NAME, " SyncHelper Adding ", listName);
+    console.log("[SyncHelper] Adding ", listName);
     return true;
   }
 
   static async removeList(listName) {
     const listObj = await SYNC_CLIENT.list(listName);
     await listObj.removeList();
-    console.log(PLUGIN_NAME, " SyncHelper Deleting ", listName);
+    console.log("[SyncHelper] Deleting ", listName);
   }
 
   static async listExists(listName) {
@@ -42,10 +42,10 @@ export default class SyncHelper {
 
     try {
       await SYNC_CLIENT.list(listOpenOptions);
-      console.log(PLUGIN_NAME, " SyncHelper ", listName, " exists");
+      console.log("[SyncHelper] ", listName, " exists");
       return true;
     } catch {
-      console.log(PLUGIN_NAME, " SyncHelper ", listName, " doesn't exist");
+      console.log("S[yncHelper] ", listName, " doesn't exist");
       return false;
     }
   }
@@ -119,8 +119,8 @@ export default class SyncHelper {
     const listOpenOptions = { id: listId, mode: "open_existing" };
     const listObj = await SYNC_CLIENT.list(listOpenOptions);
 
-    listObj.on("itemAdded", (args) => onSyncItemAdded(args)),
-      listObj.on("itemRemoved", (args) => onSyncItemRemoved(args)),
-      listObj.on("itemUpdated", (args) => onSyncItemUpdated(args));
+    listObj.on("itemAdded", (args) => onSyncItemAdded(args));
+    listObj.on("itemRemoved", (args) => onSyncItemRemoved(args));
+    listObj.on("itemUpdated", (args) => onSyncItemUpdated(args));
   }
 }
