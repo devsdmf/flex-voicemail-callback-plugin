@@ -41,6 +41,28 @@ const getTask = (context, sid) => {
     });
 };
 
+const requestCallback = async(context, taskSid, callSid, callbackStore) => {
+  const client = context.getTwilioClient();
+  const domain = getDomain(context);
+
+  await cancelTask(client, context.TWILIO_WORKSPACE_SID, taskSid);
+
+  const method = 'POST';
+  const url = `${domain}/callback` +
+    `?mode=requestConfirmation` + 
+    `&taskSid=${taskSid}` + 
+    `&callbackStore=${encodeURIComponent(callbackStore)}`;
+
+  try {
+    await client.calls(callSid).update({ method, url });
+  } catch (err) {
+    console.error('requestCallback error', err);
+    return false;
+  }
+
+  return true;
+};
+
 const sendCallToVoicemail = async (context, taskSid, callSid, voicemailBox, unavailable) => {
   const client = context.getTwilioClient();
   const domain = getDomain(context);
@@ -80,6 +102,7 @@ const cancelTask = async (client, workspaceSid, taskSid, reason) => {
 module.exports = {
   getDomain,
   getTask,
+  requestCallback,
   sendCallToVoicemail,
   cancelTask
 };

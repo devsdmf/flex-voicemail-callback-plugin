@@ -21,7 +21,6 @@ exports.handler = async (context, event, callback) => {
     if (!config.voicemailQueues.includes(event.TaskQueueName)) {
       return callback(null, response);
     }
-
     
     const taskSid = event.TaskSid;
     const taskAttributes = JSON.parse(event.TaskAttributes);
