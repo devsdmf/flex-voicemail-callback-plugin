@@ -8,10 +8,6 @@ const initialState = {
   voicemails: [],
 };
 
-const extension =
-  Manager.getInstance().store.getState().flex.worker.attributes.voicemailBox;
-
-
 export const Actions = {
   initVoicemail: () => ({
     type: "UPDATE_VOICEMAIL_LIST",

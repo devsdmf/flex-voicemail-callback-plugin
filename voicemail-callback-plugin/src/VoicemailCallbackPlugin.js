@@ -5,15 +5,20 @@ import { FlexPlugin } from "@twilio/flex-plugin";
 
 import SyncHelper from "./helpers/syncHelper";
 import VoicemailHelper from "./helpers/voicemailHelper";
+import CallbackHelper from "./helpers/callbackHelper";
 import registerVoicemailTaskChannel, {
   autoAcceptVoicemailTask,
 } from "./helpers/voicemailTaskChannel";
 
 import reducers, { namespace } from "./states";
-import { Actions } from "./states/VoiceMailListState";
+import { Actions as VoicemailActions } from "./states/VoiceMailListState";
+import { Actions as CallbackActions } from "./states/CallbackListState";
 
 import VoiceMailListContainer from "./components/VoiceMailList/VoiceMailList.Container";
 import VoicemailIconWithBadgeContainer from "./components/VoicemailIconWithBadge/VoicemailIconWithBadge.Container";
+
+import CallbackIconWithBadgeContainer from "./components/CallbackIconWithBadge/CallbackIconWithBadge.Container";
+import CallbackListContainer from "./components/CallbackList/CallbackList.Container";
 
 export const PLUGIN_NAME = "VoicemailCallbackPlugin";
 
@@ -53,6 +58,15 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
       </flex.View>
     );
 
+    flex.ViewCollection.Content.add(
+      <flex.View name="callback-list" key="plugin-callback-list-key">
+        <CallbackListContainer
+          handleCallbackRequest={CallbackHelper.handleCallbackRequest}
+          deleteCallbackRequest={CallbackHelper.deleteCallbackRequest}
+        />
+      </flex.View>
+    )
+
     flex.SideNav.Content.add(
       <flex.SideLink
         showLabel={true}
@@ -67,11 +81,27 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
       </flex.SideLink>
     );
 
+    flex.SideNav.Content.add(
+      <flex.SideLink
+        showLabel={true}
+        icon={<CallbackIconWithBadgeContainer />}
+        isActive={false}
+        onClick={() => {
+          flex.Actions.invokeAction("HistoryPush", `/callback-list`);
+        }}
+        key="callbackListSideLink"
+      >
+        Callback Requests
+      </flex.SideLink>
+    )
+
     // pulls initial voicemail list value from sync
-    manager.store.dispatch(Actions.initVoicemail());
+    manager.store.dispatch(VoicemailActions.initVoicemail());
+    manager.store.dispatch(CallbackActions.initCallbacks());
 
     // call method in voicemail helper that subscribes to sync store.
     VoicemailHelper.subscribeToVoicemails();
+    CallbackHelper.subscribeToCallbackRequests();
   }
 
   /**
