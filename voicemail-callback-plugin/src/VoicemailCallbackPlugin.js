@@ -30,6 +30,11 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
    * @param manager { import('@twilio/flex-ui').Manager }
    */
   init(flex, manager) {
+    if (!VoicemailHelper.workerHasVoicemailBox()) {
+      console.log('Worker does not have voicemail box');
+      return;
+    }
+
     this.registerReducers(manager);
     const options = { sortOrder: -1 };
 
@@ -77,7 +82,7 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
   registerReducers(manager) {
     if (!manager.store.addReducer) {
       console.error(
-        `You need FlexUI > 1.9.0 to use built-in redux; you are currently on version ${VERSION}.`
+        `You need FlexUI > 1..0 to use built-in redux; you are currently on version ${VERSION}.`
       );
       return;
     }

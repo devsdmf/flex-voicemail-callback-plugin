@@ -8,14 +8,14 @@ import { Actions } from "../states/VoiceMailListState";
 const LIST_NAME_PREFIX = "voicemail-";
 const VOICEMAIL_TASK_CHANNEL_NAME = "voicemail";
 
-function extensionToListName(extension) {
-  return LIST_NAME_PREFIX + extension;
-}
+const voicemailBoxToListName = (voicemailBox) => `voicemail-${voicemailBox}`;
 
 export { VOICEMAIL_TASK_CHANNEL_NAME };
 
 export default class VoicemailHelper {
+
   static taskChannelsBlockingNewTask = ["voice", VOICEMAIL_TASK_CHANNEL_NAME];
+
   static allowCreateNewVoicemailTask(tasks, available) {
     if (!available) return false;
 
@@ -30,32 +30,39 @@ export default class VoicemailHelper {
     return true;
   }
 
-  static async extensionExists(extension) {
-    return SyncHelper.listExists(extensionToListName(extension));
+  static async voicemailBoxExists(voicemailBox) {
+    return SyncHelper.listExists(voicemailBoxToListName(voicemailBox));
   }
 
-  static fetchExtension() {
+  static workerHasVoicemailBox() {
+    const voicemailBox = Manager.getInstance()
+      .store.getState().flex.worker.attributes.voicemailBox ?? null;
+
+    return voicemailBox !== null;
+  }
+
+  static fetchVoicemailBox() {
     return Manager.getInstance().store.getState().flex.worker.attributes
       .voicemailBox;
   }
 
   static async deleteVoicemail(id) {
     return new Promise((resolve, reject) => {
-      const listName = extensionToListName(VoicemailHelper.fetchExtension());
+      const listName = voicemailBoxToListName(VoicemailHelper.fetchVoicemailBox());
       SyncHelper.deleteListItem(listName, id);
     });
   }
 
   static async archiveVoicemail(id) {
     return new Promise((resolve, reject) => {
-      const listName = extensionToListName(VoicemailHelper.fetchExtension());
+      const listName = voicemailBoxToListName(VoicemailHelper.fetchVoicemailBox());
       SyncHelper.updateListItem(listName, id, { archived: true });
     });
   }
 
   static async handleVoicemail(id) {
     return new Promise((resolve, reject) => {
-      const listName = extensionToListName(VoicemailHelper.fetchExtension());
+      const listName = voicemailBoxToListName(VoicemailHelper.fetchVoicemailBox());
       SyncHelper.updateListItem(listName, id, { handled: true });
     });
   }
@@ -67,9 +74,7 @@ export default class VoicemailHelper {
       method: "POST",
       body: new URLSearchParams({
         id: id,
-        voicemailBox:
-          Manager.getInstance().store.getState().flex.worker.attributes
-            .voicemailBox,
+        voicemailBox: VoicemailHelper.fetchVoicemailBox(),
         Token:
           Manager.getInstance().store.getState().flex.session.ssoTokenPayload
             .token,
@@ -101,23 +106,19 @@ export default class VoicemailHelper {
         true,
         task.voicemail.callerId ?? "",
         task.voicemail.transcription ?? null,
-        task.voicemail.url ?? null
+        task.voicemail.url ?? null,
+        task.voicemail.archived ?? null,
+        task.voicemail.handled ?? null
       );
   }
 
   static async fetchAllVoicemails() {
     const voicemailListItems =
       (await SyncHelper.getListItems(
-        extensionToListName(VoicemailHelper.fetchExtension())
+        voicemailBoxToListName(VoicemailHelper.fetchVoicemailBox())
       )) || [];
 
-    const voicemails = [];
-    voicemailListItems.forEach((voicemailListItem) => {
-      voicemails.push(
-        VoicemailHelper.voicemailFromSyncListItem(voicemailListItem)
-      );
-    });
-    return voicemails;
+    return voicemailListItems.map(item => VoicemailHelper.voicemailFromSyncListItem(item));
   }
 
   static voicemailFromSyncListItem(listItem) {
@@ -136,7 +137,7 @@ export default class VoicemailHelper {
   }
 
   static subscribeToVoicemails() {
-    const listId = extensionToListName(VoicemailHelper.fetchExtension());
+    const listId = voicemailBoxToListName(VoicemailHelper.fetchVoicemailBox());
 
     SyncHelper.subscribeForListUpdates(
       listId,
