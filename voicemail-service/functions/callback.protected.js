@@ -23,9 +23,9 @@ exports.handler = async (context, event, callback) => {
   console.log('[callback] MODE => ', mode);
 
   if (mode === MODE_REQUEST_CONFIRMATION) {
-    const callbackPhoneNumber = event.callbackPhoneNumber ?? event.From;
-    console.log('[callback] callbackPhoneNumber =======> ', callbackPhoneNumber);
-    console.log('[callback] event.callbackPhoneNumber =====> ', event.callbackPhoneNumber);
+    const callbackPhoneNumber = ('callbackPhoneNumber' in event)
+      ? decodeURIComponent(event.callbackPhoneNumber)
+      : event.From;
 
     const message = `You have requested a callback at ${formatPhoneNumber(callbackPhoneNumber)}...` + 
       `If this is correct, press 1...` + 
@@ -102,7 +102,7 @@ exports.handler = async (context, event, callback) => {
     const redirectUrl = `${domain}/${FUNCTION_NAME}?mode=${MODE_REQUEST_CONFIRMATION}` +
       `&taskSid=${taskSid}` + 
       `&callbackStore=${callbackStore}` + 
-      `&callbackPhoneNumber=${encodeURIComponent(callbackPhoneNumber)}`;
+      `&callbackPhoneNumber=${encodeURIComponent(`+${callbackPhoneNumber}`)}`;
 
     twiml.redirect(redirectUrl);
 
