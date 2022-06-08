@@ -103,7 +103,7 @@ export default class CallbackHelper {
   static onSyncItemAdded(listItem) {
     // TODO: Improve this handler to do not refresh the whole list
     console.log('[CallbackHelper] New item added => ', listItem);
-    Manager.getInstance().store.disaptch(Actions.initCallbacks());
+    Manager.getInstance().store.dispatch(Actions.initCallbacks());
   }
 
   static onSyncItemRemoved(listItem) {
