@@ -1,11 +1,14 @@
 import { Component } from "react";
 
-import VoicemailHelper from "../../helpers/voicemailHelper";
 import { withTaskContext } from "@twilio/flex-ui";
 import { withTheme } from "@twilio/flex-ui";
 import { Button } from "@twilio/flex-ui-core";
 import styled from "react-emotion";
 import { Actions } from "@twilio/flex-ui";
+
+import {
+  handleVoicemail
+} from '../../services/voicemail/VoicemailService';
 
 const HandleVoicemailButtonContainer = styled(Button)`
   margin-left: 4px;
@@ -21,10 +24,9 @@ class VoicemailHandledButton extends Component {
 
   markAsHandledHandler(task) {
     this.setState({ clicked: true });
-    console.log('markAsHandledHandler', task.sid);
 
     if (task.attributes.voicemail && task.attributes.voicemail.id !== null)
-      VoicemailHelper.handleVoicemail(task.attributes.voicemail.id);
+      handleVoicemail(task.attributes.voicemail.id);
 
     Actions.invokeAction("CompleteTask", { sid: task.sid });
   }

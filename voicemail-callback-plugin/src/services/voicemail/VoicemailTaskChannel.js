@@ -1,11 +1,12 @@
 import VoicemailIcon from "@material-ui/icons/Voicemail";
-import { VOICEMAIL_TASK_CHANNEL_NAME } from "./voicemailHelper";
 import { Tab } from "@twilio/flex-ui";
-import VoicemailTaskCanvasContainer from "../components/VoicemailTaskCanvas/VoicemailTaskCanvas.Container";
-import VoicemailDeleteButton from "../components/VoicemailTaskCanvas/VoicemailDeleteButton";
-import VoicemailHandledButton from "../components/VoicemailTaskCanvas/VoicemailHandledButton";
 
-export function autoAcceptVoicemailTask(flex, manager) {
+import { VOICEMAIL_TASK_CHANNEL_NAME } from '../../helpers/TaskChannelHelper';
+
+import VoicemailTaskCanvasContainer from "../../components/VoicemailTaskCanvas/VoicemailTaskCanvas.Container";
+import VoicemailHandledButton from "../../components/VoicemailTaskCanvas/VoicemailHandledButton";
+
+export const autoAcceptVoicemailTask = (flex, manager) => {
   manager.workerClient.on("reservationCreated", (reservation) => {
     if (
       reservation.task.taskChannelUniqueName.toLowerCase() ===
@@ -21,7 +22,7 @@ export function autoAcceptVoicemailTask(flex, manager) {
 export default function registerVoicemailTaskChannel(flex) {
   const voicemailTaskChannel =
     flex.DefaultTaskChannels.createDefaultTaskChannel(
-      "voicemail",
+      'voicemail',
       (task) =>
         task.taskChannelUniqueName.toLowerCase() === VOICEMAIL_TASK_CHANNEL_NAME
     );

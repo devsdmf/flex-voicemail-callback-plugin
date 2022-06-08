@@ -1,5 +1,4 @@
 import { Component } from "react";
-import VoicemailHelper from "../../helpers/voicemailHelper";
 import { withTaskContext } from "@twilio/flex-ui";
 import { withTheme } from "@twilio/flex-ui";
 import Button from "@material-ui/core/Button";
@@ -7,6 +6,8 @@ import { Manager } from "@twilio/flex-ui";
 import { Actions } from "@twilio/flex-ui";
 import styled from "react-emotion";
 import Tooltip from "@material-ui/core/Tooltip";
+
+import { voicemailFromTaskAttributes } from '../../services/voicemail/VoicemailService';
 
 export const Container = styled("div")`
   display: flex;
@@ -61,7 +62,7 @@ class VoicemailTaskCanvas extends Component {
 
     if (!task) return <div></div>;
 
-    const voicemail = VoicemailHelper.voicemailFromTaskAttributes(
+    const voicemail = voicemailFromTaskAttributes(
       task.attributes
     );
 

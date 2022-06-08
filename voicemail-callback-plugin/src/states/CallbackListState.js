@@ -1,6 +1,5 @@
 import { Manager } from "@twilio/flex-ui";
-import { SyncHelper } from "../helpers/syncHelper";
-import CallbackHelper from "../helpers/callbackHelper";
+import { fetchAllCallbackRequests } from '../services/callback/CallbackService';
 
 const ACTION_UPDATE_CALLBACK_LIST = "UPDATE_CALLBACK_LIST";
 
@@ -11,7 +10,7 @@ const initialState = {
 export const Actions = {
   initCallbacks: () => ({
     type: ACTION_UPDATE_CALLBACK_LIST,
-    payload: CallbackHelper.fetchAllCallbackRequests(),
+    payload: fetchAllCallbackRequests(),
   }),
 };
 

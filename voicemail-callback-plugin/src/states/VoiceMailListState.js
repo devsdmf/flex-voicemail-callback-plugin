@@ -1,6 +1,5 @@
 import { Manager } from "@twilio/flex-ui";
-import SyncHelper from "../helpers/syncHelper";
-import VoicemailHelper from "../helpers/voicemailHelper";
+import { fetchAllVoicemails } from '../services/voicemail/VoicemailService';
 
 const ACTION_UPDATE_VOICEMAIL_LIST = "UPDATE_VOICEMAIL_LIST";
 
@@ -11,7 +10,7 @@ const initialState = {
 export const Actions = {
   initVoicemail: () => ({
     type: "UPDATE_VOICEMAIL_LIST",
-    payload: VoicemailHelper.fetchAllVoicemails(),
+    payload: fetchAllVoicemails(),
   }),
   addVoicemail(voicemail) {
     return {

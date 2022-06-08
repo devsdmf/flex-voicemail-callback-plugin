@@ -104,7 +104,7 @@ const Body = (props) => {
   return (
     <TableBody>
       {callbackRequests.map((callbackRequest) => (
-        <TableRow>
+        <TableRow key={callbackRequest.id}>
           <TableCell component="th" scope="row">
             {callbackRequest.id}
           </TableCell>

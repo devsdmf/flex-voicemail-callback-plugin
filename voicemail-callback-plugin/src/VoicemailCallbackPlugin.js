@@ -3,12 +3,27 @@ import React from "react";
 import { VERSION } from "@twilio/flex-ui";
 import { FlexPlugin } from "@twilio/flex-plugin";
 
-import SyncHelper from "./helpers/syncHelper";
-import VoicemailHelper from "./helpers/voicemailHelper";
-import CallbackHelper from "./helpers/callbackHelper";
+import {
+  initClient as initSyncClient
+} from './services/SyncService';
+
+import {
+  archiveVoicemail,
+  openVoicemail,
+  subscribeToVoicemails,
+  workerHasVoicemailBox,
+} from './services/voicemail/VoicemailService';
+
+import {
+  deleteCallbackRequest,
+  handleCallbackRequest,
+  subscribeToCallbackRequests,
+  workerCanPerformCallback,
+} from './services/callback/CallbackService';
+
 import registerVoicemailTaskChannel, {
   autoAcceptVoicemailTask,
-} from "./helpers/voicemailTaskChannel";
+} from './services/voicemail/VoicemailTaskChannel';
 
 import reducers, { namespace } from "./states";
 import { Actions as VoicemailActions } from "./states/VoiceMailListState";
@@ -35,7 +50,7 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
    * @param manager { import('@twilio/flex-ui').Manager }
    */
   init(flex, manager) {
-    if (!VoicemailHelper.workerHasVoicemailBox()) {
+    if (!workerHasVoicemailBox()) {
       console.log('Worker does not have voicemail box');
       return;
     }
@@ -43,65 +58,75 @@ export default class VoicemailCallbackPlugin extends FlexPlugin {
     this.registerReducers(manager);
     const options = { sortOrder: -1 };
 
-    SyncHelper.init(manager);
+    initSyncClient(manager);
+
     console.log(PLUGIN_NAME, " running");
 
-    registerVoicemailTaskChannel(flex);
-    autoAcceptVoicemailTask(flex, manager);
+    if (workerHasVoicemailBox()) {
+      console.log('[VoicemailCallbackPlugin] Worker has voicemail');
 
-    flex.ViewCollection.Content.add(
-      <flex.View name="voicemail-list" key="my-voicemail-list-key">
-        <VoiceMailListContainer
-          archiveHandler={VoicemailHelper.archiveVoicemail}
-          openHandler={VoicemailHelper.openVoicemail}
-        />
-      </flex.View>
-    );
+      registerVoicemailTaskChannel(flex);
+      autoAcceptVoicemailTask(flex, manager);
 
-    flex.ViewCollection.Content.add(
-      <flex.View name="callback-list" key="plugin-callback-list-key">
-        <CallbackListContainer
-          handleCallbackRequest={CallbackHelper.handleCallbackRequest}
-          deleteCallbackRequest={CallbackHelper.deleteCallbackRequest}
-        />
-      </flex.View>
-    )
 
-    flex.SideNav.Content.add(
-      <flex.SideLink
-        showLabel={true}
-        icon={<VoicemailIconWithBadgeContainer />}
-        isActive={false}
-        onClick={() => {
-          flex.Actions.invokeAction("HistoryPush", `/voicemail-list`);
-        }}
-        key="voicemailListSideLink"
-      >
-        Voicemail List
-      </flex.SideLink>
-    );
+      flex.ViewCollection.Content.add(
+        <flex.View name="voicemail-list" key="plugin-voicemail-list-key">
+          <VoiceMailListContainer
+            archiveHandler={archiveVoicemail}
+            openHandler={openVoicemail}
+          />
+        </flex.View>
+      );
 
-    flex.SideNav.Content.add(
-      <flex.SideLink
-        showLabel={true}
-        icon={<CallbackIconWithBadgeContainer />}
-        isActive={false}
-        onClick={() => {
-          flex.Actions.invokeAction("HistoryPush", `/callback-list`);
-        }}
-        key="callbackListSideLink"
-      >
-        Callback Requests
-      </flex.SideLink>
-    )
+      flex.SideNav.Content.add(
+        <flex.SideLink
+          showLabel={true}
+          icon={<VoicemailIconWithBadgeContainer />}
+          isActive={false}
+          onClick={() => {
+            flex.Actions.invokeAction("HistoryPush", `/voicemail-list`);
+          }}
+          key="voicemailListSideLink"
+        >
+          Voicemail List
+        </flex.SideLink>
+      );
 
-    // pulls initial voicemail list value from sync
-    manager.store.dispatch(VoicemailActions.initVoicemail());
-    manager.store.dispatch(CallbackActions.initCallbacks());
+      manager.store.dispatch(VoicemailActions.initVoicemail());
 
-    // call method in voicemail helper that subscribes to sync store.
-    VoicemailHelper.subscribeToVoicemails();
-    CallbackHelper.subscribeToCallbackRequests();
+      subscribeToVoicemails();
+    }
+
+    if (workerCanPerformCallback()) {
+      console.log('[VoicemailCallbackPlugin] Worker has callback');
+
+      flex.ViewCollection.Content.add(
+        <flex.View name="callback-list" key="plugin-callback-list-key">
+          <CallbackListContainer
+            handleCallbackRequest={handleCallbackRequest}
+            deleteCallbackRequest={deleteCallbackRequest}
+          />
+        </flex.View>
+      );
+
+      flex.SideNav.Content.add(
+        <flex.SideLink
+          showLabel={true}
+          icon={<CallbackIconWithBadgeContainer />}
+          isActive={false}
+          onClick={() => {
+            flex.Actions.invokeAction("HistoryPush", `/callback-list`);
+          }}
+          key="callbackListSideLink"
+        >
+          Callback Requests
+        </flex.SideLink>
+      );
+
+      manager.store.dispatch(CallbackActions.initCallbacks());
+
+      subscribeToCallbackRequests();
+    }
   }
 
   /**

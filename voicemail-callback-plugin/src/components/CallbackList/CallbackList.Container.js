@@ -1,10 +1,16 @@
 import { connect } from "react-redux";
-import CallbackHelper from "../../helpers/callbackHelper";
-import CallbackList from "./CallbackList";
+
+import CallbackList from './CallbackList';
+
+import { allowCreateNewVoiceTasks } from '../../helpers/TaskChannelHelper';
+import { namespace } from '../../states';
 
 const mapStateToProps = (state) => ({
-  callbackRequests: state["agent-voicemail"].CallbackList.callbackRequests,
-  callAllowed: true
+  callbackRequests: state[namespace].CallbackList.callbackRequests,
+  callAllowed: allowCreateNewVoiceTasks(
+    state['flex'].worker.tasks,
+    state['flex'].worker.activity.available
+  )
 });
 
 export default connect(mapStateToProps)(CallbackList);

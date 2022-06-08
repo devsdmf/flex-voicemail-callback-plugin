@@ -3,7 +3,9 @@ import React from "react";
 import CallbackIcon from "@material-ui/icons/PhoneCallback";
 import Badge from "@material-ui/core/Badge";
 
-import CallbackHelper from "../../helpers/callbackHelper";
+import {
+  workerCanPerformCallback,
+} from '../../services/callback/CallbackService';
 
 export default class CallbackIconWithBadge extends React.Component {
   constructor(props) {
@@ -15,7 +17,7 @@ export default class CallbackIconWithBadge extends React.Component {
     const reducer = (c, r) => !r.handled ? ++c : c;
     const unhandledRequests = callbackRequests.reduce(reducer, 0);
 
-    if (!CallbackHelper.workerCanPerformCallback()) {
+    if (!workerCanPerformCallback()) {
       return null;
     }
 
