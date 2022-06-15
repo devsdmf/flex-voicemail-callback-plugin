@@ -151,6 +151,7 @@ Also, you need to set the Hold Music TWIML URL, and that’s one of the function
 Now that you already have the voicemail and callback stores defined for tasks, it is time to give access to workers so they can see these requests and work on that. 
 
 The configuration for workers is made through attributes on TaskRouter configuration, go to **Twilio Console -> TaskRouter -> Workspaces -> Flex Task Assignment -> Workers**,  select a worker in the list and the edit window will open. On the _Attributes_ field, you need to add the voicemail box and/or callback stores that the worker will have access, like the example below:
+
 ![Worker Attributes Configuration](screenshots/worker-attributes-example.png)
 
 By default, each worker can have only one voicemail inbox and multiple callback stores, but you can change this with a few tweaks in the plugin code if necessary.
@@ -170,7 +171,6 @@ Go to Twilio Console -> TaskRouter -> Workspaces -> Flex Task Assignment -> Task
 - **Max reserved Workers**: 1
 - **Queue expression**: `1 == 2`
 
-Example:
 ![Task Queue Configuration](screenshots/task-queue-example.png)
 
 Now we need to add this new Task Queue to our Workflow, then click the **Workflows** option on the side bar, select your existing **Workflow** on the list.
@@ -184,7 +184,6 @@ On your Routing Steps,  create a new step and the end of the list (becoming your
 - **Timeout**:  None
 - **Priority**: Inherit
 
-Example:
 ![Workflow Configuration](screenshots/workflow-example.png)
 
 Now you need to create a new filter by clicking in the button `+ Add a filter` in the bottom of the page, then configure it with the following parameters:
@@ -199,7 +198,6 @@ Now you need to create a new filter by clicking in the button `+ Add a filter` i
 	- **Timeout**: None
 	- **Priority**: Inherit
 
-Example:
 ![Filter Configuration](screenshots/filter-example.png)
 
 And the last step that we need to do, is to configure the TaskRouter Events callback to call our backend service, going to **Settings** on the sidebar, we have a section called **Event Callbacks**, just fill it with the URL of your severless functions suffixing it with the `eventstream-handler` path, like in the example: `https://voicemail-service-XXXX-dev.twil.io/eventstream-handler`.
